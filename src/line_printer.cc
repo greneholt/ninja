@@ -30,7 +30,7 @@
 LinePrinter::LinePrinter() : have_blank_line_(true), console_locked_(false) {
 #ifndef _WIN32
   const char* term = getenv("TERM");
-  smart_terminal_ = (isatty(1) && term && string(term) != "dumb") || string(term) == "FORCE";
+  smart_terminal_ = isatty(1) && term && string(term) != "dumb";
 #else
   // Disable output buffer.  It'd be nice to use line buffering but
   // MSDN says: "For some systems, [_IOLBF] provides line
@@ -84,6 +84,8 @@ void LinePrinter::Print(string to_print, LineType type) {
     winsize size;
     if ((ioctl(0, TIOCGWINSZ, &size) == 0) && size.ws_col) {
       to_print = ElideMiddle(to_print, size.ws_col);
+    } else {
+      to_print = ElideMiddle(to_print, 100);
     }
     printf("%s", to_print.c_str());
     printf("\x1B[K");  // Clear to end of line.
